@@ -1,0 +1,20 @@
+apiVersion: projectcalico.org/v3
+kind: IPPool
+metadata:
+ name: svc-backup
+spec:
+ cidr: 10.111.0.0/16
+ natOutgoing: false
+ disabled: true
+# vxlanMode: CrossSubnet
+---
+apiVersion: projectcalico.org/v3
+kind: IPPool
+metadata:
+ name: pod-backup
+spec:
+ cidr: 10.241.0.0/16
+ natOutgoing: false
+ disabled: true
+# vxlanMode: CrossSubnet
+
