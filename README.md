@@ -1,9 +1,9 @@
 # Strimzi mirroring with MirrorMaker2 and Submariner
 
 ## Introduction
-This repository aims to show how it's possible to configure a couple of kafka clusters each of them in a different k8s cluster to have a mirroring process from one to another kafka installation using MirrorMaker2 as mirror manager and Submariner as networking infrastructure to enable direct and secure networking between the k8s clusters.
+The aim of this repository is to show how it's possible to configure a couple of kafka clusters each of them in a different k8s cluster to have a mirroring process from one to another kafka installation using MirrorMaker2 as mirror manager and Submariner as networking infrastructure to enable direct and secure networking between the k8s clusters.
 
-This scenario could be used in a lot of [use cases](https://developers.redhat.com/articles/2023/11/13/demystifying-kafka-mirrormaker-2-use-cases-and-architecture#use_cases):
+This scenario could be used in a lot of [use cases](https://developers.redhat.com/articles/2023/11/13/demystifying-kafka-mirrormaker-2-use-cases-and-architecture#use_cases) for example:
 * DR (Disaster Recovery) 
 * Data isolation
 * Data aggregation
@@ -17,25 +17,25 @@ kind create cluster --config primary/kind.yaml
 kind create cluster --config backup/kind.yaml
 ```
 
-Here we can notice that we have choosen two networks for pods and services not overlapped between clusters. 
+Here we can see we have choosen two networks for pods and services which are not overlapped. 
 
-For the primary clutser:
+For the primary cluster:
 ```bash
 networking:
   podSubnet: 10.240.0.0/16
   serviceSubnet: 10.110.0.0/16
 ```
 
-For the backup clutser:
+For the backup cluster:
 ```bash
 networking:
   podSubnet: 10.241.0.0/16
   serviceSubnet: 10.111.0.0/16
 ```
 
-Pod CIDRs '10.240.0.0/16' and '10.241.0.0/16' are not overlapped each other.
-Same thing happens for service CIDRs '10.110.0.0/16' and '10.111.0.0/16'.
-In such case we can use submariner without enabling its Globalnet feature.
+Pod CIDRs '10.240.0.0/16' and '10.241.0.0/16' are not overlapped.
+The same thing happens for service CIDRs '10.110.0.0/16' and '10.111.0.0/16'.
+In this case we can use Submariner without enabling its Globalnet feature.
 
 Now we can start installing Submariner.
 
@@ -43,28 +43,28 @@ Now we can start installing Submariner.
 
 ### Install Submariner Broker
 
-We want to install submariner broker into backup cluster in its control-plane node using the submariner CLI subctl.
+Firstly, we install Submariner Broker into backup cluster in its control-plane node using the Submariner CLI subctl.
 
-Before to proceed with that installation I have to retrieve the internal IP address of both cluster control-plane nodes. This addresses are needed to configure a valid kube-context which the subctl can use to install submariner components in both clusters.
+Before proceeding with the installation, the internal IP addresses of both cluster control-plane nodes have to be retrieved. These addresses are needed to configure a valid kube-context which the subctl uses to install the Submariner components in both clusters.
 
 ```bash
 export PRIMARY_INTERNAL_IPADDRESS=$(kubectl --context kind-primary get nodes primary-control-plane -o jsonpath="{.status.addresses[?(@.type=='InternalIP')].address}")
 export BACKUP_INTERNAL_IPADDRESS=$(kubectl --context kind-backup get nodes backup-control-plane -o jsonpath="{.status.addresses[?(@.type=='InternalIP')].address}")
 ```
 
-Copy the local kubeconfig file to backup control-plane node where we want to install the submariner broker:
+Copy the local kubeconfig file to the backup control-plane node where the Submariner broker is going to be installed:
 
 ```bash
 docker cp ~/.kube/config backup-control-plane:/root/.kube/config
 ```
 
-Open a terminal in backup-control-plane container hosting the control-plane node of backup cluster and set there the environment variables relative to the internal ip addresses previously discovered
+Open a terminal in the backup-control-plane container hosting the control-plane node of backup cluster and set the environment variables relative to the internal ip addresses previously discovered there:
 
 ```bash
 docker exec -it --env PRIMARY_INTERNAL_IPADDRESS --env BACKUP_INTERNAL_IPADDRESS backup-control-plane /bin/bash
 ```
 
-Let’s use those environment variables (that we passed into the container) to set the correct IP Addresses in the kubeconfig file previosly copied there. Before that we have to unset the environment variable KUBECONFIG so that kubectl can auromatically consider the kubeconfig file in ${HOME}/.kube/config
+Now those environment variables (put into the container) are used to set the correct IP Addresses in the kubeconfig file previously copied there. Before this the environment variable KUBECONFIG has to be unset so that kubectl can automatically view the kubeconfig file in ${HOME}/.kube/config
 
 ```bash
 unset KUBECONFIG
@@ -79,14 +79,14 @@ curl -Ls https://get.submariner.io | bash
 export PATH=$PATH:/root/.local/bin
 ```
 
-Install submariner broker
+Install the Submariner broker
 
 ```bash
 cd /root
 subctl deploy-broker
 ```
 
-you should to see this
+Then you should see this
 
 ```bash
 root@backup-control-plane:/# subctl deploy-broker
@@ -104,22 +104,21 @@ root@backup-control-plane:/# subctl deploy-broker
 
 ### Install Submariner Gateway Engine
 
-Using a local terminal, add the submariner label to select some worker nodes to install the submariner gateway in both clusters (we will use primary-worker node of primary cluster and backup-worker node of backup cluster)
+Using a local terminal, add the Submariner labels to select the worker nodes where the submariner gateway will be installed in both clusters (the primary-worker node of primary cluster and the backup-worker node of backup cluster will be used)
 
 ```bash
 kubectl --context kind-primary label node primary-worker submariner.io/gateway=true
 kubectl --context kind-backup label node backup-worker submariner.io/gateway=true
 ```
 
-coming back to the terminal opened into backup-control-plane container, use suctl to install a submariner gateway in each cluster:
-
+Go back to the terminal (opened into the backup-control-plane container) and use suctl to install a Submariner gateway in each cluster:
 
 ```bash
 subctl join --context kind-backup broker-info.subm --clusterid kind-backup --natt=false --cable-driver=vxlan
 subctl join --context kind-primary broker-info.subm --clusterid kind-primary --natt=false --cable-driver=vxlan
 ```
 
-Here we can notice that we have used vxlan as cable-driver so that between the submariner cluster gateways (one per node) we are not going to instantiate a IPSEC tunnel (default or --cable-driver=libreswan), but an un-encrypted tunnel implementation based on VXLAN. This kind of connection is the same used by submariner to enable the communications intra-cluster between the route agents (one per node) and the gateway. Here we had to use this kind of tunnelling beetween gateways because the actual version of library libreswan needs to access to some kernel configurations of the cluster node but not available in the container node istanziated by Kind. Obviously, when it's possible, it's always better to use IPSEC tunnelling for the communication between two submariner gateways for security reasons. 
+Here we notice we have used vxlan as the cable-driver parameter therefore we will not instantiate an IPSEC tunnel (default or --cable-driver=libreswan) between the Submariner gateways (one per cluster node), but an un-encrypted tunnel will be implemented based on VXLAN. This kind of connection is the same used by Submariner to enable the communications intra-cluster between the route agents (one per node) and the gateway. Here this kind of tunnelling has to be used between the gateways because the actual version of library libreswan needs to access some of the kernel configurations of the cluster node but the container node istanziated by Kind doesn't show them. Obviously, when it's possible, it's always better to use IPSEC tunnelling for the communication between Submariner gateways for security reasons. 
 
 After that we can check pod status in submariner-operator namespace in both clusters using our local terminal
 
