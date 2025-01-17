@@ -120,7 +120,7 @@ subctl join --context kind-primary broker-info.subm --clusterid kind-primary --n
 
 Here we notice we have used vxlan as the cable-driver parameter therefore we will not instantiate an IPSEC tunnel (default or --cable-driver=libreswan) between the Submariner gateways (one per cluster node), but an un-encrypted tunnel will be implemented based on VXLAN. This kind of connection is the same used by Submariner to enable the communications intra-cluster between the route agents (one per node) and the gateway. Here this kind of tunnelling has to be used between the gateways because the actual version of library libreswan needs to access some of the kernel configurations of the cluster node but the container node istanziated by Kind doesn't show them. Obviously, when it's possible, it's always better to use IPSEC tunnelling for the communication between Submariner gateways for security reasons. 
 
-After that we can check pod status in submariner-operator namespace in both clusters using our local terminal
+After this we check pod status in submariner-operator namespace in both clusters using a local terminal
 
 ```bash
 kubectl --context kind-primary get pod -n submariner-operator -w
@@ -130,13 +130,13 @@ kubectl --context kind-primary get pod -n submariner-operator -w
 kubectl --context kind-backup get pod -n submariner-operator -w
 ```
 
-When everything is OK, we can check the Submariner status invoking in the terminal opened into backup-control-plane container:
+When everything is OK, go back to he terminal opened into backup-control-plane container and check the Submariner status invoking:
 
 ```bash
 subctl diagnose all
 ```
 
-You should see something like that
+You should see something like that:
 
 ```bash
 Cluster "kind-primary"
