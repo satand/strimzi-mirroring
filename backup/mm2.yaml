@@ -65,10 +65,10 @@ spec:
         # The replication factor for the MirrorSourceConnector 'offset-syncs' internal topic
         # that maps the offsets of the source and target clusters.
         offset-syncs.topic.replication.factor: -1
-        sync.topic.acls.enabled: "false"
-        sync.topic.configs.enabled: "false"
-        refresh.topics.enabled: "false"
-        topic.creation.enable: "false"
+        sync.topic.acls.enabled: "false" # This should be fauls when User Operator is enabled
+        sync.topic.configs.enabled: "false" # it prevents MirrorMaker 2 to update the configuration for the manually created topics
+        refresh.topics.enabled: "false" # it prevents MirrorMaker 2 to update the configuration for the manually created topics
+        topic.creation.enable: "false" # it prevents MirrorMaker 2 to update the configuration for the manually created topics
         # Defines the separator used for the renaming of remote topics (useful when mirroring ACTIVE / ACTIVE clusters)
         replication.policy.separator: ""
         # Override automatic renaming (use this policy for ACTIVE / PASSIVE use cases)
@@ -76,7 +76,7 @@ spec:
         replication.policy.class: "io.strimzi.kafka.connect.mirror.IdentityReplicationPolicy"
         # Refresh interval to check new topics created in source cluster
         refresh.topics.interval.seconds: 60
-        #offset-syncs.topic.location: target
+        #offset-syncs.topic.location: target # In case you want all mm2 internal topic in the target cluster. The mm2-offset-sync topic is created in the source cluster by default.
     heartbeatConnector:
       config:
         # Internal topic 'heartbeats' created at the target cluster
@@ -96,7 +96,7 @@ spec:
         emit.checkpoints.interval.seconds: 60
         # Interval period to refresh consumer groups statuses (Default: 600)
         refresh.groups.interval.seconds: 60
-        #offset-syncs.topic.location: target
+        #offset-syncs.topic.location: target # In case you want all mm2 internal topic in the target cluster. The mm2-offset-sync topic is created in the source cluster by default.
     topicsPattern: ".*"
     groupsPattern: ".*"
   logging:
