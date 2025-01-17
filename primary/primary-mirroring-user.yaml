@@ -1,10 +1,10 @@
 apiVersion: kafka.strimzi.io/v1beta1
 kind: KafkaUser
 metadata:
-  name: mirroring-user
+  name: primary-mirroring-user
   labels:
     strimzi.io/cluster: streams-cluster
 spec:
   authentication:
-    type: tls
-  # super-users do not declare authorization block  
+    type: scram-sha-512
+  # super-users do not declare authorization block

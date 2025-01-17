@@ -8,12 +8,12 @@ spec:
   connectCluster: "cluster-backup" # Must be the target custer
   clusters:
   - alias: "cluster-primary" # Source cluster
-    bootstrapServers: kafka-primary-kafka-bootstrap:9093
-    authentication: 
+    bootstrapServers: streams-cluster-kafka-mirroring-bootstrap.kafka.svc.clusterset.local:9093
+    authentication:
       type: scram-sha-512
-      username: mirror-user
+      username: primary-mirroring-user
       passwordSecret:
-        secretName: mirror-user
+        secretName: primary-mirroring-user
         password: password
     config:
       # -1 means it will use the default replication factor configured in the broker
@@ -21,12 +21,12 @@ spec:
       offset.storage.replication.factor: -1
       status.storage.replication.factor: -1
   - alias: "cluster-backup" # Target cluster
-    bootstrapServers: kafka-backup-kafka-bootstrap:9093
+    bootstrapServers: streams-cluster-backup-kafka-mirroring-bootstrap.kafka.svc.cluster.local:9093
     authentication:
       type: scram-sha-512
-      username: mirror-user-backup
+      username: backup-mirroring-user
       passwordSecret:
-        secretName: mirror-user-backup
+        secretName: backup-mirroring-user
         password: password
     config:
       # The following KafkaConnect topics are created by default. You can change the default
@@ -66,6 +66,9 @@ spec:
         # that maps the offsets of the source and target clusters.
         offset-syncs.topic.replication.factor: -1
         sync.topic.acls.enabled: "false"
+        sync.topic.configs.enabled: "false"
+        refresh.topics.enabled: "false"
+        topic.creation.enable: "false"
         # Defines the separator used for the renaming of remote topics (useful when mirroring ACTIVE / ACTIVE clusters)
         replication.policy.separator: ""
         # Override automatic renaming (use this policy for ACTIVE / PASSIVE use cases)
@@ -73,6 +76,7 @@ spec:
         replication.policy.class: "io.strimzi.kafka.connect.mirror.IdentityReplicationPolicy"
         # Refresh interval to check new topics created in source cluster
         refresh.topics.interval.seconds: 60
+        #offset-syncs.topic.location: target
     heartbeatConnector:
       config:
         # Internal topic 'heartbeats' created at the target cluster
@@ -92,6 +96,7 @@ spec:
         emit.checkpoints.interval.seconds: 60
         # Interval period to refresh consumer groups statuses (Default: 600)
         refresh.groups.interval.seconds: 60
+        #offset-syncs.topic.location: target
     topicsPattern: ".*"
     groupsPattern: ".*"
   logging:

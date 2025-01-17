@@ -1,0 +1,35 @@
+apiVersion: kafka.strimzi.io/v1beta1
+kind: KafkaUser
+metadata:
+  name: reader-user
+  labels:
+    strimzi.io/cluster: streams-cluster-backup
+spec:
+  authentication:
+    type: scram-sha-512
+  # Producer ACLs for topic my-topic
+  authorization:
+    type: simple
+    acls:
+      - resource:
+          type: topic
+          name: "my-topic"
+          patternType: literal
+        operations:
+          - Read
+          - DescribeConfigs
+        host: "*"
+      - resource:
+          type: group
+          name: "my-group"
+          patternType: literal
+        operations:
+          - Read
+          - Describe
+        host: "*"
+      - resource:
+          type: cluster
+          patternType: literal
+        operations:
+          - Describe
+        host: "*"

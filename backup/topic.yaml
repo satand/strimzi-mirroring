@@ -3,7 +3,7 @@ kind: KafkaTopic
 metadata:
   name: my-topic
   labels:
-    strimzi.io/cluster: streams-cluster
+    strimzi.io/cluster: streams-cluster-backup
 spec:
   partitions: 3
   replicas: 3

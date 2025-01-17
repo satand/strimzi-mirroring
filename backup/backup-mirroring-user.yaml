@@ -1,9 +1,9 @@
 apiVersion: kafka.strimzi.io/v1beta1
 kind: KafkaUser
 metadata:
-  name: mirror-user-backup
+  name: backup-mirroring-user
   labels:
-    strimzi.io/cluster: kafka-backup
+    strimzi.io/cluster: streams-cluster-backup
 spec:
   authentication:
     type: scram-sha-512

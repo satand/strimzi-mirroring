@@ -15,4 +15,3 @@ nodes:
 networking:
   podSubnet: 10.240.0.0/16
   serviceSubnet: 10.110.0.0/16
-  disableDefaultCNI: true
