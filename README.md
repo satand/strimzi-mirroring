@@ -10,7 +10,7 @@ This scenario could be used in a lot of [use cases](https://developers.redhat.co
 * Data migration
 
 ## Create K8s clusters with Kind
-Create clusters:
+Install kind and create the k8s clusters:
 
 ```bash
 kind create cluster --config primary/kind.yaml
@@ -131,7 +131,7 @@ kubectl --context kind-primary get pod -n submariner-operator -w
 kubectl --context kind-backup get pod -n submariner-operator -w
 ```
 
-When everything will be OK, we can check the Submariner status invoking in the terminal opened into backup-control-plane container:
+When everything is OK, we can check the Submariner status invoking in the terminal opened into backup-control-plane container:
 
 ```bash
 subctl diagnose all
@@ -329,6 +329,16 @@ Commercial support is available at
 </html>
 ```
 
+Now, exit from the previuos terminal and then clean the test resources:
+
+```bash
+subctl unexport service --context kind-backup --namespace test nginx
+```
+
+```bash
+kubectl --context kind-backup delete namespaces test
+```
+
 ## Install Kakfa and enable mirroring
 
 ### Install Strimzi operator
@@ -471,7 +481,7 @@ Create the mm2 pod (in production environments increase its replicas) in the bac
 
 ```bash
 kubectl --context kind-backup apply -f backup/mm2.yaml -n kafka
-kubectl wait kafkamirrormaker2/mirror-maker-2-backup --for=condition=Ready --timeout=300s -n kafka
+kubectl --context kind-backup wait kafkamirrormaker2/mm2 --for=condition=Ready --timeout=500s -n kafka
 ```
 
 There are a lot of thing to notice in the created mm2 resource. The most important things are:
@@ -533,7 +543,17 @@ EOF
 bin/kafka-console-consumer.sh --bootstrap-server streams-cluster-backup-kafka-bootstrap:9092 --topic my-topic --consumer.config=/tmp/consumer.properties --group my-group"
 ```
 
-If all is ok, writing some messages in the producer terminal, we should see after a bit time the same messages in the consumer terminal.
+If all is ok, when both above terminals will be ready, bwriting some messages in the producer terminal, we should see after a bit time the same messages in the consumer terminal.
+
+:partying_face: Have fun! :partying_face:
+
+## Clean all
+
+Destroy kind clusters:
+
+```bash
+kind delete clusters --all
+```
 
 ## References
 Projects

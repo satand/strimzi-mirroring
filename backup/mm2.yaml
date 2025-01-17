@@ -69,6 +69,8 @@ spec:
         sync.topic.configs.enabled: "false" # it prevents MirrorMaker 2 to update the configuration for the manually created topics
         refresh.topics.enabled: "false" # it prevents MirrorMaker 2 to update the configuration for the manually created topics
         topic.creation.enable: "false" # it prevents MirrorMaker 2 to update the configuration for the manually created topics
+        topic.creation.default.replication.factor: -1
+        topic.creation.default.partitions: -1
         # Defines the separator used for the renaming of remote topics (useful when mirroring ACTIVE / ACTIVE clusters)
         replication.policy.separator: ""
         # Override automatic renaming (use this policy for ACTIVE / PASSIVE use cases)

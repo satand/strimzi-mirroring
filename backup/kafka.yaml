@@ -44,14 +44,15 @@ spec:
         tls: false
         authentication:
           type: scram-sha-512
-        configuration:
-          brokers:
-          - broker: 0
-            advertisedHost: streams-cluster-backup-kafka-mirroring-0.kafka.svc.clusterset.local
-          - broker: 1
-            advertisedHost: streams-cluster-backup-kafka-mirroring-1.kafka.svc.clusterset.local
-          - broker: 2
-            advertisedHost: streams-cluster-backup-kafka-mirroring-2.kafka.svc.clusterset.local
+        # Enbale this in case of you want enable a mirroring from backup to primary cluster
+        # configuration:
+        #   brokers:
+        #   - broker: 0
+        #     advertisedHost: streams-cluster-backup-kafka-mirroring-0.kafka.svc.clusterset.local
+        #   - broker: 1
+        #     advertisedHost: streams-cluster-backup-kafka-mirroring-1.kafka.svc.clusterset.local
+        #   - broker: 2
+        #     advertisedHost: streams-cluster-backup-kafka-mirroring-2.kafka.svc.clusterset.local
     authorization:
       type: simple
       superUsers:
