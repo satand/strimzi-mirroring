@@ -555,14 +555,19 @@ kind delete clusters --all
 ```
 
 ## References
+
 Projects
 * [Kind](https://kind.sigs.k8s.io/)
 * [Submariner](https://submariner.io/)
 * [Strimzi](https://strimzi.io/documentation/)
 * [Strimzi API Reference](https://strimzi.io/docs/operators/latest/configuring)
+
+
 Articles
 * [Demystifying Kafka MirrorMaker 2: Use cases and architecture](https://developers.redhat.com/articles/2023/11/13/demystifying-kafka-mirrormaker-2-use-cases-and-architecture#)
 * [Mastering Kafka migration with MirrorMaker 2](https://developers.redhat.com/articles/2024/01/04/mastering-kafka-migration-mirrormaker-2#)
 * [How to use MirrorMaker 2 with OpenShift Streams for Apache Kafka](https://developers.redhat.com/articles/2021/12/15/how-use-mirrormaker-2-openshift-streams-apache-kafka#)
+
+
 Github
 * [rmarting/strimzi-migration-demo](https://github.com/rmarting/strimzi-migration-demo/tree/main)
