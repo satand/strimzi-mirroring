@@ -395,7 +395,7 @@ We have choosen to use the type 'cluster-ip' for the mirroring listener because 
 
 ### Create the topics
 
-Now we are going to create a topic in the primary kafka cluster and the relative topic (with the same name and configuration) in the backup kafka cluster. This second topic will be the destination of mirrored messages from the first topic by MirrorMaker2. MM2 could create the destination topic automatically, but in same case this behaviour can produce some mistackes in the topic configuration. For this reason we'll prefer to disable this MM2 behaviour in its resource and create manually the destination topic.
+Now we will create a topic in the primary kafka cluster and another topic with the same name and configuration in the backup kafka cluster. This second topic will be the mirroring target topic relative to the first one (mirroring source topic) for MirroMaker2. MM2 could create the destination topic automatically, but sometime this behaviour could produce some mistackes in the destination topic configuration. For this reason we'll prefer to disable this MM2 behaviour in its resource and create the destination topic manually.
 
 Create the topic into the primary cluster and check it becomes ready:
 ```bash
