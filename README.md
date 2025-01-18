@@ -343,21 +343,21 @@ kubectl --context kind-backup delete namespaces test
 
 ### Install Strimzi operator
 
-Before deploying the Strimzi cluster operator, create a namespace called kafka where we are going to install strimzi operator and then a kafka cluster:
+Create a namespace called kafka in both clusters. We'll install in it the Strimzi operator and then a Kafka cluster:
 
 ```bash
 kubectl --context kind-primary create namespace kafka
 kubectl --context kind-backup create namespace kafka
 ```
 
-Apply the Strimzi install files including ClusterRoles, ClusterRoleBindings, some Custom Resource Definitions (CRDs) and operator deployment:
+Apply the Strimzi install files (this will install ClusterRoles, ClusterRoleBindings, Strimzi Custom Resource Definitions (CRDs) and the operator deployment):
 
 ```bash
 kubectl --context kind-primary create -f 'https://strimzi.io/install/latest?namespace=kafka' -n kafka
 kubectl --context kind-backup create -f 'https://strimzi.io/install/latest?namespace=kafka' -n kafka
 ```
 
-Follow the deployment of the Strimzi cluster operator in both clusters in two different shells:
+Follow the Strimzi operator deployment in both clusters:
 ```bash
 kubectl --context kind-primary get pod -n kafka --watch -o wide
 ```
@@ -382,15 +382,16 @@ kubectl --context kind-backup apply -f backup/kafka.yaml -n kafka
 kubectl --context kind-backup wait kafka/streams-cluster-backup --for=condition=Ready --timeout=500s -n kafka
 ```
 
-For the moment the created kafka cluster are independent each other. The resource configuration is the same for both cluster with the exception of the cluster name which is rispectively:
-* streams-cluster
-* streams-cluster-backup
+For the moment the created kafka cluster are independent each other. The used resources are the same for both clusters with the exception of the cluster name which is:
+* streams-cluster for the primary kafka cluster
+* streams-cluster-backup for the backup kafka cluster
 
-In the cluster configuration there is an important thing we have to notice: in each cluster we have created two listeners:
-* a listener named 'plain' and type 'internal' that we imagine using it to enable consumers and producers to read and write from/to kafka topics;
-* a listener named 'mirroring' and type 'cluster-ip' that we imagine using it to enable the mirroring flow between the kafka clusters;
+Notice an important thing in the used kafka resources, two kafka listeners are created in each kafka cluster:
+* a listener named 'plain' and with type 'internal' used to enable consumers and producers clients to read/write from/to kafka topics;
+* a listener named 'mirroring' and with type 'cluster-ip' used to enable the mirroring flow between the kafka clusters. It will be used by the consumer and producer kafka client of MirrorMaker2;
 
-We are going to install the MirrorMaker2 in the backup cluster to manage the mirroring flow from the source kafka cluster in the primary k8s cluster and the target kafka cluster in the same backup k8s cluster. We have choosen to use the type 'cluster-ip' for the mirroring listener because in this way we'll the operator will create a bootstrap service and a service foreach kafka brokers dedicated to the mirroring listener and we'll be able to export these services using submariner so that they can be usable from any k8s cluster. We'll see shortly how this thing is at the base of kafka mirroring using submariner.
+We will install the MirrorMaker2 in the backup cluster to manage the mirroring flow from the source kafka cluster in the primary k8s cluster and the target kafka cluster in the backup k8s cluster. It's always better to install MirroMaker2 close to the target kafka cluster.
+We have choosen to use the type 'cluster-ip' for the mirroring listener because in this way the Strimzi operator will create a bootstrap service and a service foreach kafka brokers dedicated to the mirroring listener. This thing is mandatory to be able to export these services using Submariner so that they can be usable from any k8s cluster.
 
 ### Create the topics
 
