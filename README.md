@@ -130,13 +130,13 @@ kubectl --context kind-primary get pod -n submariner-operator -w
 kubectl --context kind-backup get pod -n submariner-operator -w
 ```
 
-When everything is OK, go back to he terminal opened into backup-control-plane container and check the Submariner status invoking:
+When everything is OK, go back to the terminal opened into backup-control-plane container and check the Submariner status invoking:
 
 ```bash
 subctl diagnose all
 ```
 
-You should see something like that:
+You should see something like this:
 
 ```bash
 Cluster "kind-primary"
@@ -187,14 +187,13 @@ Cluster "kind-backup"
  ✓ Checking that services have been exported properly
 ```
 
-If we want to get some info about submariner and his components in our clusters, we can 
-using this command
+You can get some info about Submariner and its components in our clusters using this command:
 
 ```bash
 subctl show all
 ```
 
-You should see something like that
+You should see something like this:
 
 ```bash
 Cluster "kind-backup"
@@ -266,41 +265,43 @@ submariner-lighthouse-agent     quay.io/submariner   0.19.2       release-0.19-c
 submariner-lighthouse-coredns   quay.io/submariner   0.19.2       release-0.19-c138ebf9dfe9   arm64
 ```
 
-### Test submariner export service (aka service discovery) between clusters
+### Test Submariner export service (aka service discovery) between clusters
 
-Create the same namespace in both cluters
+To export a service existing in a namespace of a cluster so that it is available also in an other cluster using Submariner, you need a namespace with the same name of the exported service namespace in the other cluster.
+
+Create a namespace named 'test' in both cluters
 
 ```bash
 kubectl --context kind-primary create namespace test
 kubectl --context kind-backup create namespace test
 ```
 
-Create a nginx deploy in backup cluster and expose it through a service
+Create a nginx deploy in backup cluster and expose it through a service:
 
 ```bash
 kubectl --context kind-backup -n test create deployment nginx --image=nginx
 kubectl --context kind-backup -n test expose deployment nginx --port=80
 ```
 
-Export the nginx service using submariner so that it is available in both cluster in the domain clusterset.local 
+Export the cretaed nginx service using Submariner so that it is available in both cluster in the domain 'clusterset.local':
 
 ```bash
 subctl export service --context kind-backup --namespace test nginx
 ```
 
-Deploy a nettest container in the primary cluster and open a in it
+Deploy a nettest container in the primary cluster and open a terminal in it:
 
 ```bash
 kubectl --context kind-primary run -n default tmp-shell --rm -i --tty --image quay.io/submariner/nettest -- /bin/bash
 ```
 
-Try to invoke the nginx service in the backup cluster simply executing a curl in the previolsy opened terminal
+Invoke the exported nginx service (deployed in the backup cluster) executing a curl in the temrinal of nettest container (deployed in the primary cluster):
 
 ```bash
 curl nginx.test.svc.clusterset.local
 ```
 
-You should see the welcome page of nginx server
+You should see the welcome page of the nginx server:
 
 ```bash
 <!DOCTYPE html>
@@ -328,7 +329,7 @@ Commercial support is available at
 </html>
 ```
 
-Now, exit from the previuos terminal and then clean the test resources:
+Now, exit from the previuos terminal and clean the test resources:
 
 ```bash
 subctl unexport service --context kind-backup --namespace test nginx
@@ -338,7 +339,7 @@ subctl unexport service --context kind-backup --namespace test nginx
 kubectl --context kind-backup delete namespaces test
 ```
 
-## Install Kakfa and enable mirroring
+## Install Kakfa clusters and enable mirroring
 
 ### Install Strimzi operator
 
