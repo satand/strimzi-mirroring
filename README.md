@@ -411,15 +411,15 @@ kubectl --context kind-backup wait kafkatopic/my-topic --for=condition=Ready --t
 
 ### Create the kafka users
 
-Here we are going to create a couple of kafka user for each cluster. In particluar we'll create:
+Now we will create a couple of kafka user for each cluster:
 * in the primary kafka cluster:
-  * a user with writing permissions to the topic created previosly
-  * a user for mirroring with admin permissions
+  * a user with writing rights on the topic created previosly
+  * a user for mirroring with admin rights
 * in the backup kafka cluster:
-  * a user with reading permissions to the topic created previosly
-  * a user for mirroring with admin permissions
+  * a user with reading rights on the topic created previosly
+  * a user for mirroring with admin rights
 
-In our scenario the main role will be played by two mirroring users. MM2 will use them to read and write mirrored data from the primary cluster to the backup cluster. The other users will be used by a producer and consumer client into the primary and backap cluster rispectively.
+In our scenario the main role will be played by the mirroring users. MM2 will use them to read mirrored data from the primary cluster and write them to the backup cluster. The other users will be used by a producer and consumer kafka client connected to the primary and backap cluster rispectively.
 
 Create the writer user into the primary cluster (mm2 source cluster) and wait for it to be ready:
 
@@ -451,7 +451,7 @@ kubectl --context kind-backup wait kafkauser/backup-mirroring-user --for=conditi
 
 ### Export the primary mirroring user secret to the backup cluster 
 
-How we said the MM2 will be installed in the backup cluster and it needs both kafka mirroring users to read from primary cluster and write to backup cluster. Now MM2 can access to the backup mirroring user credential secret directly (they are in the same cluster), but this is not equal for the primary mirroring user credential secret. For this reason we create a copy of that secret in the backup cluster using:
+We alreay said the MM2 will be installed in the backup cluster and it needs to use both kafka mirroring users to read from the primary cluster topic and write to the backup cluster topic. Currently MM2 can access to the backup mirroring user credential secret directly (they are both in the same cluster), but this is not true for the primary mirroring user credential secret. For this reason we will create a copy of that secret in the backup cluster:
 
 ```bash
 export PRIMARY_MIRRORING_USER_PASSWORD=$(kubectl --context kind-primary get secret primary-mirroring-user -n kafka -o jsonpath='{.data.password}' | base64 -d)
@@ -460,7 +460,7 @@ kubectl --context kind-backup create secret generic primary-mirroring-user -n ka
 
 ### Export the primary kafka mirroring services using submariner
 
-If you have the submariner CLI binary installed in your local machine you can execute this commands in a local shell, otherwise you can use the same terminal opened in the backup-control-plain container previusly when we installed submariner components:
+If you have the Submariner CLI binary installed in your machine you can execute this commands in a local shell, otherwise you can use the same terminal opened in the backup-control-plain container to install Submariner components:
 
 ```bash
 subctl export service --context kind-primary --namespace kafka streams-cluster-kafka-mirroring-bootstrap
@@ -478,17 +478,17 @@ After that the mirroring kafka bootstrap service and services foreach kafka brok
 
 ### Deploy MirrorMaker2 (MM2) in the backup cluster
 
-Create the mm2 pod (in production environments increase its replicas) in the backup cluster to manage kafka mirroring from primary to backup kafka clusters and wait it to be ready:
+Create the MM2 pod (in production environments increase its replicas) in the backup cluster to manage kafka mirroring from primary to backup kafka clusters and wait it to be ready:
 
 ```bash
 kubectl --context kind-backup apply -f backup/mm2.yaml -n kafka
 kubectl --context kind-backup wait kafkamirrormaker2/mm2 --for=condition=Ready --timeout=500s -n kafka
 ```
 
-There are a lot of thing to notice in the created mm2 resource. The most important things are:
+There are a lot of notable things in the created MM2 resource:
 * in the clusters section
   * for the source cluster
-    * the bootstrapServers field with the value 'streams-cluster-kafka-mirroring-bootstrap.kafka.svc.clusterset local:9093'. It's the hostname and port of mirroring bootstrap service of the primary kafka cluster exported via submariner. This service will give MM2 client its list of mirroring kafka broker services and, because they are available from backup cluster (where mm2 is deployed), we have specified in the mirroring listener of primary kafka cluster the advertised host of each broker using the hostnames in the domain 'clusterset.local' (the domain resolved by submariner DNS services).
+    * the bootstrapServers field with the value 'streams-cluster-kafka-mirroring-bootstrap.kafka.svc.clusterset local:9093' is the hostname and port of the mirroring bootstrap service of the primary kafka cluster exported via Submariner. This service will give MM2 client its list of mirroring kafka broker services and, because they are available from backup cluster (where MM2 is deployed), we have specified in the mirroring listener of primary kafka cluster the advertised host of each broker using the hostnames in the domain 'clusterset.local' (the domain resolved by Submariner DNS service).
       ```bash
         - name: mirroring
         port: 9093
@@ -505,22 +505,22 @@ There are a lot of thing to notice in the created mm2 resource. The most importa
           - broker: 2
             advertisedHost: streams-cluster-kafka-mirroring-2.kafka.svc.clusterset.local
       ```
-     * the authentication section where is configured the reference to the primary mirroring user secret that we have previously copied in the backup from the primary cluster.
+     * the authentication section is configured with the reference to the primary mirroring user secret that we have previously copied into the backup from the primary cluster.
   * for the target cluster
-    * the bootstrapServers field with the value 'streams-cluster-backup-kafka-mirroring-bootstrap.kafka.svc.cluster.local:9093'. It's the hostname and port of mirroring bootstrap service of the backup kafka cluster. Notice how we can use the service FQDN in the 'cluster.local' domain (the domain resolved by k8s DNS services).
-     * the authentication section where is configured the reference to the backup mirroring user secret.
+    * the bootstrapServers field with the value 'streams-cluster-backup-kafka-mirroring-bootstrap.kafka.svc.cluster.local:9093' is the hostname and port of mirroring bootstrap service of the backup kafka cluster. Notice we can use the service FQDN in the 'cluster.local' domain (the domain resolved by the k8s DNS service).
+     * the authentication section is configured with the reference to the backup mirroring user secret.
 * in the mirrors section 
   * for the connector sections
-    * 'sync.topic.configs.enabled: "false"', 'refresh.topics.enabled: "false"' and 'topic.creation.enable: "false"' configs related to our decision to disable mm2 topic creation feature in favor of manually topic creation
-    * 'replication.policy.class: "io.strimzi.kafka.connect.mirror.IdentityReplicationPolicy"' config to mirror the data from a topic in the source cluster to another topic in the target but with the same name. The default replication policy uses for the target topic the name of the source topic prefixed with the name of the source cluster.
-  * the topicsPattern and groupsPattern fields where it's possibe to use regex or comma-separated list of the topics/groups managed by mirroring process.
+    * 'sync.topic.configs.enabled: "false"', 'refresh.topics.enabled: "false"' and 'topic.creation.enable: "false"' configurations are related to our decision to disable MM2 topic creation feature in favor of the manually topic creation.
+    * 'replication.policy.class: "io.strimzi.kafka.connect.mirror.IdentityReplicationPolicy"' configuration is to mirror the data from a topic in the source cluster to another topic with the same name in the target cluster, whereas to use for target topic the name of the source topic prefixed with the name of the source cluster (default replication policy).
+  * the topicsPattern and groupsPattern fields are used to configure regex or comma-separated list of the topics/groups managed by mirroring process.
 
 
 ## Test the mirroring
 
 At this point we can test our kafka mirroring solution with NMM2 and Submriner.
 
-We are going to create a kafka producer client writing on a topic of the primary kafka cluster and a kafka consumer client reading from the topic with the same name (and under mirroring process) of the backup kafka cluster.
+We will create a kafka producer client writing to a topic of the primary kafka cluster and a kafka consumer client reading from the mirrored topic with the same name in the backup kafka cluster.
 
 Sample producer authenticated with the writer user and attached to the plain listener of primary kafka cluster:
 ```bash
@@ -544,7 +544,7 @@ EOF
 bin/kafka-console-consumer.sh --bootstrap-server streams-cluster-backup-kafka-bootstrap:9092 --topic my-topic --consumer.config=/tmp/consumer.properties --group my-group"
 ```
 
-If all is ok, when both above terminals will be ready, bwriting some messages in the producer terminal, we should see after a bit time the same messages in the consumer terminal.
+If all is ok, when both above terminals will be ready, writing some messages in the producer terminal, we should see the same messages in the consumer terminal in a bit time.
 
 :partying_face: Have fun! :partying_face:
 
