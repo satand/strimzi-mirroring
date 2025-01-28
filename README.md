@@ -9,6 +9,52 @@ This scenario could be used in a lot of [use cases](https://developers.redhat.co
 * Data aggregation
 * Data migration
 
+## Requirements
+We assume that you have the latest version of the kind binary, which you can get from the [Kind GitHub repository](https://github.com/kubernetes-sigs/kind/releases).
+
+Kind requires a running Docker Daemon. There are different Docker options depending on your host platform (you can follow the instructions on the [Docker website](https://docs.docker.com/get-started/get-docker/)). You could also prefer to install podman as alternative to docker using the [podman installation instructions](https://podman.io/docs/installation).
+
+You’ll also need the kubectl binary, which you can get by following the [kubectl installation instructions](https://kubernetes.io/docs/tasks/tools/install-kubectl/).
+
+Once you have all the binaries installed, and a Docker daemon running, make sure everything works:
+
+# Validate docker installation
+```bash
+docker ps
+docker version
+```
+
+or
+
+```bash
+podman ps
+podman version
+```
+
+# Validate kind
+```bash
+kind version
+```
+
+# Validate kubectl
+```bash
+kubectl version
+```
+
+I have used these versions for my lab:
+```bash
+$ podman version
+Client:       Podman Engine
+Version:      5.0.1
+...
+$ kind version
+kind v0.26.0
+...
+$ kubectl version
+Client Version: v1.30.0
+...
+```
+
 ## Create K8s clusters with Kind
 Install kind and create the k8s clusters:
 
