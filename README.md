@@ -63,6 +63,8 @@ kind create cluster --config primary/kind.yaml
 kind create cluster --config backup/kind.yaml
 ```
 
+The image used for each cluster node is the latest image (Kubernetes v1.32.0) available at the time I wrote this demo. If you want to check the current latest node image, you can go [here](https://github.com/kubernetes-sigs/kind/releases).
+
 Here we can see we have choosen two networks for pods and services which are not overlapped. 
 
 For the primary cluster:
