@@ -29,7 +29,6 @@ spec:
         host: "*"
       - resource:
           type: cluster
-          patternType: literal
         operations:
           - Describe
         host: "*"
