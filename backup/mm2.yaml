@@ -99,6 +99,7 @@ spec:
         # Interval period to refresh consumer groups statuses (Default: 600)
         refresh.groups.interval.seconds: 60
         #offset-syncs.topic.location: target # In case you want all mm2 internal topic in the target cluster. The mm2-offset-sync topic is created in the source cluster by default.
+    topicsExcludePattern: '.*\.internal, mirrormaker2.*, __.*'
     topicsPattern: ".*"
     groupsPattern: ".*"
   logging:
